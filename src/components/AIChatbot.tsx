@@ -94,12 +94,19 @@ export function AIChatbot() {
       });
     };
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+
+      // Only add Authorization if we have a key, using Bearer token format
+      if (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+        headers["Authorization"] = `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+      }
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
+        headers: headers,
         body: JSON.stringify({
           messages: [...messages, userMessage].slice(-10),
           // Keep last 10 messages for context
@@ -107,8 +114,15 @@ export function AIChatbot() {
         })
       });
       if (!resp.ok) {
-        const error = await resp.json();
-        throw new Error(error.error || "Failed to get response");
+        let errorMessage = "Failed to get response";
+        try {
+          const error = await resp.json();
+          errorMessage = error.error || errorMessage;
+        } catch (e) {
+          const text = await resp.text();
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       const reader = resp.body?.getReader();
       if (!reader) throw new Error("No response body");
@@ -136,17 +150,18 @@ export function AIChatbot() {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) updateAssistant(content);
-          } catch {
-            buffer = line + "\n" + buffer;
-            break;
+          } catch (e) {
+            console.error("Error parsing JSON chunk:", e);
+            continue;
           }
         }
       }
     } catch (error) {
       console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Connection failed";
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Sorry, I'm having trouble connecting right now. Please try again or contact our admission office directly. 📞"
+        content: `Sorry, I'm having trouble connecting right now. (Error: ${errorMessage}). Please try again or contact our admission office directly. 📞`
       }]);
     } finally {
       setIsLoading(false);

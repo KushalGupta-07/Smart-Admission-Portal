@@ -71,14 +71,14 @@ export const Footer = () => {
                   <MapPin className="h-5 w-5 text-emerald-400" />
                 </div>
                 <span className="leading-tight">
-                  123 Education Street, <br />University Area, City - 400001
+                  G H Raisoni University, <br />Badnera, Amravati - 444701
                 </span>
               </li>
               <li className="flex items-center gap-4 text-gray-400 group hover:text-white transition-colors">
                 <div className="p-2 rounded-lg bg-white/5 group-hover:bg-emerald-500/20 transition-colors">
                   <Phone className="h-5 w-5 text-emerald-400" />
                 </div>
-                <span>+91 22 1234 5678</span>
+                <span>+91 7777777777</span>
               </li>
               <li className="flex items-center gap-4 text-gray-400 group hover:text-white transition-colors">
                 <div className="p-2 rounded-lg bg-white/5 group-hover:bg-emerald-500/20 transition-colors">
@@ -100,7 +100,7 @@ export const Footer = () => {
 
         <div className="border-t border-gray-800 pt-8 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p className="hover:text-gray-300 transition-colors">© 2025 Smart Admission Portal. All rights reserved.</p>
+            <p className="hover:text-gray-300 transition-colors">© 2026 Smart Admission Portal. All rights reserved.</p>
             <div className="flex gap-8">
               <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>

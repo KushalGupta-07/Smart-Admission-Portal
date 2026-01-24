@@ -3,19 +3,37 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+      } 
+    });
   }
 
   try {
-    const { messages, type = "chat" } = await req.json();
+    const { messages = [], type = "chat" } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("LOVABLE_API_KEY is not set in Supabase secrets");
+      return new Response(JSON.stringify({ 
+        error: "LOVABLE_API_KEY is not configured in Supabase secrets. Please run 'supabase secrets set LOVABLE_API_KEY=your_key'." 
+      }), {
+        status: 500,
+        headers: { 
+          ...corsHeaders, 
+          "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+          "Content-Type": "application/json" 
+        },
+      });
     }
 
     // Context-aware system prompts based on type
@@ -63,7 +81,7 @@ Provide helpful feedback on what needs improvement.`
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemContent },
           ...messages,
@@ -73,34 +91,44 @@ Provide helpful feedback on what needs improvement.`
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "AI is currently busy. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI service temporarily unavailable." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to get AI response" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      
+      let errorJson;
+      try {
+        errorJson = JSON.parse(errorText);
+      } catch {
+        errorJson = { error: errorText };
+      }
+
+      return new Response(JSON.stringify({ 
+        error: errorJson.error || `AI service returned ${response.status}` 
+      }), {
+        status: response.status === 401 ? 500 : response.status, // Don't pass through 401s as they confuse the client
+        headers: { 
+          ...corsHeaders, 
+          "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+          "Content-Type": "application/json" 
+        },
       });
     }
 
     return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { 
+        ...corsHeaders, 
+        "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+        "Content-Type": "text/event-stream" 
+      },
     });
   } catch (error) {
     console.error("AI chat error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Internal Server Error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { 
+        ...corsHeaders, 
+        "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+        "Content-Type": "application/json" 
+      },
     });
   }
 });
