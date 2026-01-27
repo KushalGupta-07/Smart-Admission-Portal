@@ -22,17 +22,17 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Address",
-    details: ["Student Admission Office", "Education Complex, Sector 15", "New Delhi - 110001"],
+    details: ["G H Raisoni University", "Anjangaon Bari Road, Badnera", "Amravati - 444701"],
   },
   {
     icon: Phone,
     title: "Phone",
-    details: ["+91 11 2345 6789", "+91 11 2345 6790", "Toll Free: 1800-123-4567"],
+    details: ["+91 7777777777", "+91 8888888888", "Toll Free: 1800-123-4567"],
   },
   {
     icon: Mail,
     title: "Email",
-    details: ["admissions@portal.edu.in", "support@portal.edu.in", "helpdesk@portal.edu.in"],
+    details: ["admissions@portal.edu", "support@portal.edu", "helpdesk@portal.edu"],
   },
   {
     icon: Clock,
@@ -193,16 +193,23 @@ const Contact = () => {
                 </Card>
               </ScrollReveal>
 
-              {/* Map Placeholder */}
+              {/* Contact Map */}
               <ScrollReveal animation="fade-up" delay={400}>
-                <Card className="mt-8">
+                <Card className="mt-8 overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-muted-foreground">Map View</p>
-                        <p className="text-sm text-muted-foreground">Education Complex, Sector 15, New Delhi</p>
-                      </div>
+                    <div className="h-[400px] w-full bg-muted">
+                      <iframe
+                      
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3728.743013775315!2d77.75979227377101!3d20.84208139416708!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd6a5d9cb44ca19%3A0xc740bf7c88f52db5!2sG%20H%20Raisoni%20University%2C%20Amravati!5e0!3m2!1sen!2sin!4v1769267660299!5m2!1sen!2sin"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0, filter: "invert(90%)" }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Office Location"
+                        className="w-full h-full"
+                      />
                     </div>
                   </CardContent>
                 </Card>

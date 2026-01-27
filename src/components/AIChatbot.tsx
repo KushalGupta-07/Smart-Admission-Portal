@@ -184,6 +184,19 @@ export function AIChatbot() {
           "apikey": supabaseKey
         },
         signal: controller.signal,
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+
+      // Only add Authorization if we have a key, using Bearer token format
+      if (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+        headers["Authorization"] = `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`;
+      }
+
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: headers,
         body: JSON.stringify({
           messages: [...messages, userMessage].slice(-10), // Keep last 10 messages for context
           type: "chat"
@@ -238,6 +251,15 @@ export function AIChatbot() {
         } else {
           throw new Error(`Server error (${resp.status}): ${errorDetails || resp.statusText}`);
         }
+        let errorMessage = "Failed to get response";
+        try {
+          const error = await resp.json();
+          errorMessage = error.error || errorMessage;
+        } catch (e) {
+          const text = await resp.text();
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       if (!resp.ok) {
