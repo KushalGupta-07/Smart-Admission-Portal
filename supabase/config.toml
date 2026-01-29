@@ -1,7 +1,11 @@
 project_id = "xwduwxvywpkulumpvalr"
 
 [functions.send-status-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-chat]
-verify_jwt = false
+verify_jwt = true
+
+# LCP optimization notes:
+# - Serve /images/hero.webp from CDN with long cache TTL and proper Cache-Control.
+# - Ensure storage delivers WebP/optimized image variants.

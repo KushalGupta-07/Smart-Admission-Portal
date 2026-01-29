@@ -2,10 +2,29 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  "https://smart-bay-six.vercel.app",
+  "http://localhost:8080",
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean) as string[];
+
+// Get CORS headers based on origin
+const getCorsHeaders = (origin: string | null) => {
+  const isAllowed = origin && (
+    ALLOWED_ORIGINS.includes(origin) ||
+    origin.includes("lovable.app") ||
+    origin.includes("lovable.dev")
+  );
+
+  return {
+    "Access-Control-Allow-Origin": isAllowed ? origin : "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "86400",
+  };
 };
 
 interface StatusEmailRequest {
@@ -59,6 +78,9 @@ const getStatusDetails = (status: string) => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Smart Admission Portal</title>
+
+	<!-- Preconnect + preload critical font -->
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
+
+	<!-- Preload hero image (use WebP) -->
+	<link rel="preload" href="/images/hero.webp" as="image">
+
+	<!-- Inline critical CSS for above-the-fold -->
+	<style>
+		/* critical: minimal above-the-fold styles */
+		html,body{height:100%;margin:0}
+		.header, .hero {display:block}
+		.hero{width:100%;max-width:1200px;height:auto;object-fit:cover}
+	</style>
+
+	<!-- ...existing head code... -->
+</head>
+<body>
+	<!-- ...existing code... -->
+
+	<!-- Hero image: explicit size + eager load for LCP -->
+	<img
+		src="/images/hero.webp"
+		alt="Hero"
+		class="hero"
+		width="1200"
+		height="700"
+		loading="eager"
+		fetchpriority="high"
+	/>
+	<!-- ...existing code... -->
+
+	<!-- Defer main app script so HTML/CSS render first -->
+	<script defer src="/src/app.js"></script>
+
+	<!-- ...existing code... -->
+</body>
+</html>
