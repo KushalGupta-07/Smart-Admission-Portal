@@ -1,30 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://smart-bay-six.vercel.app",
-  "http://localhost:8080",
-  "http://localhost:5173",
-  "http://localhost:3000",
-].filter(Boolean) as string[];
-
-// Get CORS headers based on origin
-const getCorsHeaders = (origin: string | null) => {
-  const isAllowed = origin && (
-    ALLOWED_ORIGINS.includes(origin) ||
-    origin.includes("lovable.app") ||
-    origin.includes("lovable.dev")
-  );
-
-  return {
-    "Access-Control-Allow-Origin": isAllowed ? origin : "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Max-Age": "86400",
-  };
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface StatusEmailRequest {
@@ -77,15 +56,68 @@ const getStatusDetails = (status: string) => {
   }
 };
 
-const handler = async (req: Request): Promise<Response> => {
-  const origin = req.headers.get("origin");
-  const corsHeaders = getCorsHeaders(origin);
-  
+serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Check RESEND_API_KEY first
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: "Email service not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Verify admin authentication
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify the user is authenticated and is an admin
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError?.message || "No user found");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if user has admin role
+    const { data: hasRole, error: roleError } = await supabase.rpc("has_role", {
+      _user_id: user.id,
+      _role: "admin",
+    });
+
+    if (roleError) {
+      console.error("Role check error:", roleError.message);
+      return new Response(JSON.stringify({ error: "Failed to verify admin role" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!hasRole) {
+      return new Response(JSON.stringify({ error: "Forbidden - Admin access required" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const {
       studentEmail,
       studentName,
@@ -96,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
       remarks,
     }: StatusEmailRequest = await req.json();
 
-    console.log(`Sending ${status} email to ${studentEmail}`);
+    console.log(`Processing ${status} email for application ${applicationNumber}`);
 
     const statusDetails = getStatusDetails(status);
     const currentDateTime = new Date().toLocaleString("en-IN", {
@@ -221,23 +253,23 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const emailResult = await emailResponse.json();
-    console.log("Email sent successfully:", emailResult);
 
     if (!emailResponse.ok) {
-      throw new Error(`Failed to send email: ${JSON.stringify(emailResult)}`);
+      console.error(`Email send failed: ${JSON.stringify(emailResult)}`);
+      throw new Error(`Failed to send email: ${emailResult.message || "Unknown error"}`);
     }
 
-    return new Response(JSON.stringify(emailResult), {
+    console.log(`Email sent successfully for application ${applicationNumber}, ID: ${emailResult.id}`);
+
+    return new Response(JSON.stringify({ success: true, id: emailResult.id }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error sending status email:", error);
+    console.error("Email function error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
-};
-
-serve(handler);
+});
