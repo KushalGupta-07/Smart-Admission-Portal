@@ -7,28 +7,28 @@ const notices = [
   {
     id: 1,
     title: "Last Date Extended for Online Application",
-    date: "2025-12-01",
+    date: "2026-01-31",
     type: "important",
     description: "The last date for submitting online applications has been extended to December 15, 2025."
   },
   {
     id: 2,
     title: "Entrance Exam Schedule Released",
-    date: "2025-11-28",
+    date: "2026-02-20",
     type: "new",
     description: "Check the detailed schedule for entrance examinations scheduled in January 2026."
   },
   {
     id: 3,
     title: "Document Verification Dates Announced",
-    date: "2025-11-25",
+    date: "2025-02-25",
     type: "update",
     description: "Document verification will be conducted from January 20-25, 2026 at designated centers."
   },
   {
     id: 4,
     title: "Revised Merit List Published",
-    date: "2025-11-20",
+    date: "2025-03-05",
     type: "important",
     description: "The revised merit list for first-year admissions has been published on the portal."
   }

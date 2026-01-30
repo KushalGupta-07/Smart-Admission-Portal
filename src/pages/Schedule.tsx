@@ -9,36 +9,36 @@ const scheduleData = [
   {
     phase: "Registration Phase",
     events: [
-      { date: "January 15, 2025", event: "Online Registration Opens", status: "completed" },
-      { date: "January 20, 2025", event: "Application Form Available", status: "completed" },
-      { date: "June 30, 2025", event: "Last Date for Registration", status: "upcoming" },
+      { date: "January 1, 2026", event: "Online Registration Opens", status: "completed" },
+      { date: "January 20, 2026", event: "Application Form Available", status: "completed" },
+      { date: "January 31, 2026", event: "Last Date for Registration", status: "upcoming" },
     ]
   },
   {
     phase: "Entrance Examination",
     events: [
-      { date: "July 10, 2025", event: "Admit Card Download Begins", status: "upcoming" },
-      { date: "July 15, 2025", event: "Entrance Examination Date", status: "upcoming" },
-      { date: "July 25, 2025", event: "Answer Key Release", status: "upcoming" },
-      { date: "July 30, 2025", event: "Result Declaration", status: "upcoming" },
+      { date: "February 2, 2026", event: "Admit Card Download Begins", status: "upcoming" },
+      { date: "February 15-20, 2026", event: "Entrance Examination Date", status: "upcoming" },
+      { date: "February 25, 2026", event: "Answer Key Release", status: "upcoming" },
+      { date: "March 1, 2026", event: "Result Declaration", status: "upcoming" },
     ]
   },
   {
     phase: "Counselling & Admission",
     events: [
-      { date: "August 5, 2025", event: "Merit List Publication", status: "upcoming" },
-      { date: "August 10-12, 2025", event: "First Round Counselling", status: "upcoming" },
-      { date: "August 15-17, 2025", event: "Second Round Counselling", status: "upcoming" },
-      { date: "August 20-22, 2025", event: "Spot Round (if seats available)", status: "upcoming" },
+      { date: "March 5, 2026", event: "Merit List Publication", status: "upcoming" },
+      { date: "March 10, 2026", event: "First Round Counselling", status: "upcoming" },
+      { date: "March 15, 2026", event: "Second Round Counselling", status: "upcoming" },
+      { date: "March 20, 2026", event: "Spot Round (if seats available)", status: "upcoming" },
     ]
   },
   {
     phase: "Academic Session",
     events: [
-      { date: "August 25, 2025", event: "Document Verification", status: "upcoming" },
-      { date: "August 30, 2025", event: "Fee Payment Deadline", status: "upcoming" },
-      { date: "September 1, 2025", event: "Orientation Program", status: "upcoming" },
-      { date: "September 5, 2025", event: "Classes Commence", status: "upcoming" },
+      { date: "February 25, 2026", event: "Document Verification", status: "upcoming" },
+      { date: "March 30, 2026", event: "Fee Payment Deadline", status: "upcoming" },
+      { date: "April 1, 2026", event: "Orientation Program", status: "upcoming" },
+      { date: "April 2, 2026", event: "Classes Commence", status: "upcoming" },
     ]
   },
 ];
@@ -62,7 +62,7 @@ const Schedule = () => {
             <div className="container mx-auto px-4 text-center">
               <h1 className="text-4xl font-bold mb-4">Important Dates & Schedule</h1>
               <p className="text-lg opacity-90 max-w-2xl mx-auto">
-                Stay updated with all important dates for the admission process 2025-26
+                Stay updated with all important dates for the admission process 2026-27
               </p>
             </div>
           </ScrollReveal>

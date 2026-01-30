@@ -9,7 +9,7 @@ const eligibility = [
   "Must have passed 12th standard or equivalent examination",
   "Minimum 50% marks in qualifying examination (45% for reserved categories)",
   "Valid entrance exam score (where applicable)",
-  "Age limit: Maximum 25 years as on 1st July 2025 (30 years for reserved categories)",
+  "Age limit: Maximum 25 years as on 1st July 2026 (30 years for reserved categories)",
 ];
 
 const documents = [
@@ -63,7 +63,7 @@ const Admissions = () => {
         <section className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground pt-24 md:pt-32 pb-16">
           <ScrollReveal animation="fade-in">
             <div className="container mx-auto px-4 text-center">
-              <h1 className="text-4xl font-bold mb-4">Admissions 2025-26</h1>
+              <h1 className="text-4xl font-bold mb-4">Admissions 2026-27</h1>
               <p className="text-lg opacity-90 max-w-2xl mx-auto">
                 Join us for academic excellence. Applications are now open for undergraduate programs.
               </p>

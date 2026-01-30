@@ -5,37 +5,37 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 const importantDates = [
   {
     event: "Application Start Date",
-    date: "December 1, 2025",
+    date: "January 1, 2026",
     time: "10:00 AM",
     status: "active"
   },
   {
     event: "Last Date for Registration",
-    date: "December 15, 2025",
+    date: "January 31, 2026",
     time: "11:59 PM",
     status: "upcoming"
   },
   {
     event: "Admit Card Release",
-    date: "January 5, 2026",
+    date: "February 2, 2026",
     time: "12:00 PM",
     status: "upcoming"
   },
   {
     event: "Entrance Examination",
-    date: "January 15-20, 2026",
+    date: "February 15-20, 2026",
     time: "Various Slots",
     status: "upcoming"
   },
   {
     event: "Result Declaration",
-    date: "February 1, 2026",
+    date: "March 1, 2026",
     time: "5:00 PM",
     status: "upcoming"
   },
   {
     event: "Counselling Begins",
-    date: "February 10, 2026",
+    date: "March 10, 2026",
     time: "10:00 AM",
     status: "upcoming"
   }
