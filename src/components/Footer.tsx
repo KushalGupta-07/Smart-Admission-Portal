@@ -1,6 +1,23 @@
 import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Youtube, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
+  const quickLinks = [
+    { label: 'New Registration', path: '/register' },
+    { label: 'Application Status', path: '/application-status' },
+    { label: 'Download Admit Card', path: '/results' },
+    { label: 'Check Results', path: '/results' },
+    { label: 'FAQs', path: '/help' },
+  ];
+
+  const resources = [
+    { label: 'User Manual', path: '/help' },
+    { label: 'Course Details', path: '/admissions' },
+    { label: 'Fee Structure', path: '/admissions' },
+    { label: 'Important Documents', path: '/help' },
+    { label: 'Contact Support', path: '/contact' },
+  ];
+
   return (
     <footer className="bg-gradient-to-br from-gray-900 to-gray-950 text-white pt-20 pb-10 relative overflow-hidden">
       {/* Decorative background elements */}
@@ -30,12 +47,12 @@ export const Footer = () => {
               Quick Links
             </h3>
             <ul className="space-y-3">
-              {['New Registration', 'Application Status', 'Download Admit Card', 'Check Results', 'FAQs'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="group flex items-center text-gray-400 hover:text-emerald-400 transition-colors">
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.path} className="group flex items-center text-gray-400 hover:text-emerald-400 transition-colors">
                     <ArrowRight className="h-3 w-3 mr-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    {item}
-                  </a>
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -48,12 +65,12 @@ export const Footer = () => {
               Resources
             </h3>
             <ul className="space-y-3">
-              {['User Manual', 'Course Details', 'Fee Structure', 'Important Documents', 'Contact Support'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="group flex items-center text-gray-400 hover:text-violet-400 transition-colors">
+              {resources.map((link) => (
+                <li key={link.label}>
+                  <Link to={link.path} className="group flex items-center text-gray-400 hover:text-violet-400 transition-colors">
                     <ArrowRight className="h-3 w-3 mr-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    {item}
-                  </a>
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -102,9 +119,9 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p className="hover:text-gray-300 transition-colors">© 2026 Smart Admission Portal. All rights reserved.</p>
             <div className="flex gap-8">
-              <a href="#" className="hover:text-emerald-400 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-emerald-400 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-emerald-400 transition-colors">Accessibility</a>
+              <Link to="/help" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+              <Link to="/help" className="hover:text-emerald-400 transition-colors">Terms of Service</Link>
+              <Link to="/help" className="hover:text-emerald-400 transition-colors">Accessibility</Link>
             </div>
           </div>
         </div>
