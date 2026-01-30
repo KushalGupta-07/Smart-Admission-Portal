@@ -21,14 +21,14 @@ const notices = [
   {
     id: 3,
     title: "Document Verification Dates Announced",
-    date: "2025-02-25",
+    date: "2026-02-25",
     type: "update",
     description: "Document verification will be conducted from January 20-25, 2026 at designated centers."
   },
   {
     id: 4,
     title: "Revised Merit List Published",
-    date: "2025-03-05",
+    date: "2026-03-05",
     type: "important",
     description: "The revised merit list for first-year admissions has been published on the portal."
   }
