@@ -118,6 +118,7 @@ serve(async (req) => {
       });
     }
 
+    const body = await req.json();
     const {
       studentEmail,
       studentName,
@@ -126,9 +127,27 @@ serve(async (req) => {
       status,
       admitCardNumber,
       remarks,
-    }: StatusEmailRequest = await req.json();
+    }: StatusEmailRequest = body;
 
-    console.log(`Processing ${status} email for application ${applicationNumber}`);
+    console.log(`Processing ${status} email for application ${applicationNumber} to ${studentEmail}`);
+    console.log("Request body:", JSON.stringify(body));
+
+    // Validate required fields
+    if (!studentEmail) {
+      console.error("Missing studentEmail in request");
+      return new Response(JSON.stringify({ error: "Student email is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!applicationNumber || !courseName || !status) {
+      console.error("Missing required fields:", { applicationNumber, courseName, status });
+      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     const statusDetails = getStatusDetails(status);
     const currentDateTime = new Date().toLocaleString("en-IN", {
@@ -238,25 +257,40 @@ serve(async (req) => {
       </html>
     `;
 
+    console.log(`Sending email to ${studentEmail} with subject: ${statusDetails.subject}`);
+
+    const emailPayload = {
+      from: "Admissions <noreply@contact.xeroxify.xyz>",
+      to: [studentEmail],
+      subject: statusDetails.subject,
+      html: emailHtml,
+    };
+    
+    console.log("Email payload:", JSON.stringify({ ...emailPayload, html: "[HTML content]" }));
+
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: "Admissions <onboarding@resend.dev>",
-        to: [studentEmail],
-        subject: statusDetails.subject,
-        html: emailHtml,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const emailResult = await emailResponse.json();
-
+    console.log(`Resend API response (${emailResponse.status}):`, JSON.stringify(emailResult));
+    
     if (!emailResponse.ok) {
       console.error(`Email send failed: ${JSON.stringify(emailResult)}`);
-      throw new Error(`Failed to send email: ${emailResult.message || "Unknown error"}`);
+      // Return more specific error message
+      const errorMsg = emailResult.message || emailResult.error?.message || "Unknown error";
+      return new Response(JSON.stringify({ 
+        error: `Failed to send email: ${errorMsg}`,
+        details: emailResult 
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     console.log(`Email sent successfully for application ${applicationNumber}, ID: ${emailResult.id}`);
