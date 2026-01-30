@@ -160,7 +160,7 @@ export const HeroSection = () => {
   } as any;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background selection:bg-cyan-500/30">
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background selection:bg-cyan-500/30 pt-24 md:pt-32">
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <motion.div
