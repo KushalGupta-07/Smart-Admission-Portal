@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2, FileText, Clock, CheckCircle, XCircle, AlertCircle, FileCheck, Sparkles, ArrowRight, Download } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { generateAdmitCardPDF } from "@/lib/admitCardPdf";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
@@ -116,6 +117,58 @@ const ApplicationStatus = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to search. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadAdmitCard = async () => {
+    if (!application) return;
+    try {
+      setIsLoading(true);
+      // Try to fetch admit card record for this application
+      const { data: admitCard, error: admitError } = await supabase
+        .from("admit_cards")
+        .select("*")
+        .eq("application_id", application.id)
+        .maybeSingle();
+
+      if (admitError || !admitCard) {
+        toast({
+          variant: "destructive",
+          title: "Admit Card Not Found",
+          description: "No admit card has been generated for this application yet.",
+        });
+        return;
+      }
+
+      // Fetch profile for student details (name, email, phone)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name,email,phone")
+        .eq("user_id", application.user_id)
+        .maybeSingle();
+
+      const pdfData = {
+        admitCardNumber: admitCard.admit_card_number,
+        applicationNumber: application.application_number,
+        studentName: profile?.full_name || "",
+        courseName: application.course_name,
+        preferredCollege: application.preferred_college,
+        stream: application.stream,
+        generatedAt: admitCard.generated_at || new Date().toISOString(),
+        studentEmail: profile?.email || undefined,
+        studentPhone: profile?.phone || undefined,
+      };
+
+      generateAdmitCardPDF(pdfData);
+      toast({ title: "Download started", description: "Admit card is downloading." });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "Unable to download admit card. Please try again later.",
       });
     } finally {
       setIsLoading(false);
@@ -397,9 +450,9 @@ const ApplicationStatus = () => {
                               <Download className="mr-2 h-4 w-4" />
                               Download Offer Letter
                             </Button>
-                            <Button className="flex-1" variant="outline">
+                            <Button className="flex-1" variant="outline" onClick={handleDownloadAdmitCard} disabled={isLoading}>
                               <Download className="mr-2 h-4 w-4" />
-                              Download Admit Card
+                              {isLoading ? "Downloading..." : "Download Admit Card"}
                             </Button>
                           </div>
                         )}
