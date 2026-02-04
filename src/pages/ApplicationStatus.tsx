@@ -175,6 +175,37 @@ const ApplicationStatus = () => {
     }
   };
 
+  const handleCancelAdmission = async () => {
+    if (!application) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this admission? This will delete your application and cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsLoading(true);
+
+      // Delete any admit card record for this application
+      await supabase.from('admit_cards').delete().eq('application_id', application.id);
+
+      // Delete any uploaded documents associated with this application
+      await supabase.from('documents').delete().eq('application_id', application.id);
+
+      // Finally delete the application record itself
+      const { error } = await supabase.from('applications').delete().eq('id', application.id);
+      if (error) throw error;
+
+      setApplication(null);
+      toast({ title: 'Application Cancelled', description: 'Your application has been removed.' });
+    } catch (err) {
+      console.error('Failed to cancel application', err);
+      toast({ variant: 'destructive', title: 'Cancellation Failed', description: 'Unable to cancel your application. Please try again later.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -453,6 +484,15 @@ const ApplicationStatus = () => {
                             <Button className="flex-1" variant="outline" onClick={handleDownloadAdmitCard} disabled={isLoading}>
                               <Download className="mr-2 h-4 w-4" />
                               {isLoading ? "Downloading..." : "Download Admit Card"}
+                            </Button>
+                          </div>
+                        )}
+
+                        {user && user.id === application.user_id && application.status !== 'approved' && (
+                          <div className="pt-4">
+                            <Button variant="destructive" onClick={handleCancelAdmission} disabled={isLoading}>
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Cancel Admission
                             </Button>
                           </div>
                         )}

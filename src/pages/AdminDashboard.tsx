@@ -82,6 +82,46 @@ const AdminDashboard = () => {
     }
   }, [user, authLoading, navigate, toast]);
 
+  // Realtime subscription to keep admin view in sync when applications change
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:applications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'applications' },
+        (payload) => {
+          const newApp = payload.new as ApplicationRow;
+          setApplications((prev) => [newApp, ...(prev || [])]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'applications' },
+        (payload) => {
+          const updated = payload.new as ApplicationRow;
+          setApplications((prev) => (prev || []).map(a => (a.id === updated.id ? { ...a, ...updated } : a)));
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'applications' },
+        (payload) => {
+          const oldRec = payload.old as ApplicationRow;
+          setApplications((prev) => (prev || []).filter(a => a.id !== oldRec.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {
+        // fallback
+        channel.unsubscribe();
+      }
+    };
+  }, []);
+
   const fetchApplications = async () => {
     setIsLoading(true);
     try {

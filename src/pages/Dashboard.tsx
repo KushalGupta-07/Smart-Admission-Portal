@@ -4,6 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { LiveStatsCard } from "@/components/LiveStatsCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+import { useEffect, useState } from "react";
 import { useStudentDashboardStats } from "@/hooks/useStudentDashboardStats";
 import { motion } from "framer-motion";
 import {
@@ -18,6 +22,7 @@ import {
   Mail,
   Shield,
   ArrowRight,
+  XCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -27,9 +32,61 @@ const milestones = [
   { title: "Application review", status: "In progress", icon: Clock, date: "ETA: 3 days" },
 ];
 
+type Application = Database['public']['Tables']['applications']['Row'];
+
 const Dashboard = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { applicationsCount, pendingTasks, messages, profileScore } = useStudentDashboardStats(user?.id);
+  const [application, setApplication] = useState<Application | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  useEffect(() => {
+    const fetchMyApplication = async () => {
+      if (!user) return;
+      try {
+        const { data } = await supabase
+          .from('applications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        setApplication(data || null);
+      } catch (err) {
+        console.error('Failed to fetch user application', err);
+      }
+    };
+
+    fetchMyApplication();
+  }, [user]);
+
+  const handleCancelAdmission = async () => {
+    if (!application) return;
+
+    const confirmed = window.confirm(
+      'Are you sure you want to cancel this admission? This will delete your application and cannot be undone.'
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsCancelling(true);
+
+      await supabase.from('admit_cards').delete().eq('application_id', application.id);
+      await supabase.from('documents').delete().eq('application_id', application.id);
+      const { error } = await supabase.from('applications').delete().eq('id', application.id);
+      if (error) throw error;
+
+      setApplication(null);
+      toast({ title: 'Application Cancelled', description: 'Your application has been removed.' });
+    } catch (err) {
+      console.error('Failed to cancel application', err);
+      toast({ variant: 'destructive', title: 'Cancellation Failed', description: 'Unable to cancel your application. Please try again later.' });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
   const displayName = user?.user_metadata?.full_name || "Applicant";
 
   return (
@@ -101,6 +158,13 @@ const Dashboard = () => {
                     Manage profile
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+
+                  {user && application && user.id === application.user_id && application.status !== 'approved' && (
+                    <Button variant="destructive" onClick={handleCancelAdmission} disabled={isCancelling}>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Cancel Admission
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -136,45 +200,50 @@ const Dashboard = () => {
               <Card className="border shadow-sm">
                 <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
                   <div>
-                    <CardTitle>Application timeline</CardTitle>
-                    <CardDescription>Your next steps to complete the process</CardDescription>
+                    <CardTitle>Recent Applications</CardTitle>
+                    <CardDescription>Latest application activity</CardDescription>
                   </div>
                   <Link to="/application-status" className="text-sm text-primary font-medium flex items-center gap-2">
                     View full status <ArrowRight className="h-4 w-4" />
                   </Link>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {milestones.map((item, idx) => {
-                    const Icon = item.icon;
-                    return (
-                      <div
-                        key={item.title}
-                        className="flex items-center justify-between p-4 rounded-xl border bg-muted/40 hover:bg-muted/70 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">{item.date}</p>
-                          </div>
+                <CardContent>
+                  {application ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between p-4 rounded-xl border bg-muted/40 hover:bg-muted/70 transition-colors">
+                        <div>
+                          <p className="font-medium">{application.application_number}</p>
+                          <p className="text-sm text-muted-foreground">{application.course_name}</p>
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs ${
-                            idx === 0
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
+                        <div className="text-right">
+                          <span className="px-3 py-1 rounded-full text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            {application.status.replace(/_/g, ' ')}
+                          </span>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {application.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : 'Not submitted'}
+                          </p>
+                        </div>
                       </div>
-                    );
-                  })}
+
+                      <div className="flex items-center gap-2">
+                        <Link to="/application-status" className="text-sm text-primary font-medium flex items-center gap-2">
+                          View Status <ArrowRight className="h-4 w-4" />
+                        </Link>
+                        {application.status !== 'approved' && (
+                          <Button variant="destructive" onClick={handleCancelAdmission} disabled={isCancelling}>
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Cancel Admission
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-sm text-muted-foreground">
+                      No recent applications. <Link to="/register" className="text-primary font-medium">Start a new application</Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-
             </motion.div>
 
             <motion.div
