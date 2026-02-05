@@ -22,7 +22,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: "Address",
-    details: ["G H Raisoni University", "Anjangaon Bari Road, Badnera", "Amravati - 444701"],
+    details: ["Seven Couching institude", "Badnera", "Amravati - 444701"],
   },
   {
     icon: Phone,

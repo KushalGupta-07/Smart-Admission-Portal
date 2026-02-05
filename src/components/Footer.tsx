@@ -88,7 +88,7 @@ export const Footer = () => {
                   <MapPin className="h-5 w-5 text-emerald-400" />
                 </div>
                 <span className="leading-tight">
-                  G H Raisoni University, <br />Badnera, Amravati - 444701
+                  Seven Couching Institude, <br />Badnera, Amravati - 444701
                 </span>
               </li>
               <li className="flex items-center gap-4 text-gray-400 group hover:text-white transition-colors">
